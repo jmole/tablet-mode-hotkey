@@ -1,0 +1,12 @@
+[Unit]
+Description=Start Tablet Mode Switch before GDM
+Wants=graphical.target
+Before=gdm.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/tablet-mode-switch
+
+[Install]
+WantedBy=graphical.target
+
