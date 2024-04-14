@@ -46,27 +46,22 @@ Then, identify the device (`event7`) and key (`KEY_PROG2`) that you want to use.
 
 ### Building the service
 
-You need GCC, linux-headers, and libevdev installed to compile this.
+You need GCC, linux-headers, libudev, and libevdev installed to compile this.
 
 ```sh
-gcc -o tablet-mode-switch hotkey.c -levdev -I/usr/include/libevdev-1.0
+make tablet-mode-switch
 ```
 
-### Installing
+### Installing / Uninstalling
 
-Copy the binary somewhere. If you use a different path than I did, you will need to modify the systemd unit file with the path you chose.
+See [Makefile](Makefile) for details on what this does.
 
 ```sh
-sudo cp tablet-mode-switch /usr/local/sbin
+sudo make install-service 
 ```
 
-Next, copy over the systemd unit and enable it. It needs to happen before the window manager loads,so you'll either have to restart your computer, or start the service then log out and log in again.
-
 ```sh
-sudo cp tablet-mode-switch.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable tablet-mode-switch.service
-sudo systemctl install tablet-mode-switch.service
+sudo make uninstall 
 ```
 
 ## Debugging
