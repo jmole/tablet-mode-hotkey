@@ -13,7 +13,8 @@ install-service: install
 	systemctl enable tablet-mode-switch.service
 
 clean:
-	rm tablet-mode-switch
+	-rm tablet-mode-switch
+	-rm tablet-mode-test
 
 uninstall:
 	-systemctl stop tablet-mode-switch.service
