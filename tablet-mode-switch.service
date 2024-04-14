@@ -1,12 +1,10 @@
 [Unit]
-Description=Start Tablet Mode Switch before GDM
-Wants=graphical.target
-Before=gdm.service
+Description=Tablet Mode Switch HID Device
 
 [Service]
 Type=simple
 ExecStart=/usr/local/sbin/tablet-mode-switch
 
 [Install]
-WantedBy=graphical.target
+WantedBy=sysinit.target
 
