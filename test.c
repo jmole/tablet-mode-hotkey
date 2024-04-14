@@ -45,11 +45,9 @@ int main(void)
         return -1;
     }
 
-    for (int i=0; i<20; ++i)
+    for (int i=0; i<9; ++i)
     {
-        // Toggle the SW_TABLET_MODE state
-        tablet_mode_state = !tablet_mode_state;
-
+        sleep(1);
         // Emit SW_TABLET_MODE event to the virtual device
         memset(&ev, 0, sizeof(struct input_event));
         ev.type = EV_SW;
@@ -63,7 +61,8 @@ int main(void)
         ev.code = SYN_REPORT;
         ev.value = 0;
         write(uinput_fd, &ev, sizeof(struct input_event));
-        sleep(1);
+        // Toggle the SW_TABLET_MODE state
+        tablet_mode_state = !tablet_mode_state;
     }
 
     // Cleanup (not reached in this example due to the infinite loop)
