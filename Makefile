@@ -19,3 +19,6 @@ uninstall:
 	-systemctl stop tablet-mode-switch.service
 	-systemctl disable tablet-mode-switch.service
 	-rm /usr/local/sbin/tablet-mode-switch
+
+test:
+	gcc -o tablet-mode-test test.c -levdev -ludev -I/usr/include/libevdev-1.0
