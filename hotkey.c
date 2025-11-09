@@ -6,6 +6,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/select.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 
 /*
@@ -100,6 +103,7 @@ const char* first_child_event_device(const char* device_name) {
     return device_path;
 }
 
+
 int main(void)
 {
     int uinput_fd, event_fd, ret;
@@ -182,6 +186,53 @@ int main(void)
                     ev.code = SYN_REPORT;
                     ev.value = 0;
                     write(uinput_fd, &ev, sizeof(struct input_event));
+
+                    // Send GNOME notification using notify-send
+                    char notification_cmd[512];
+                    const char *message = tablet_mode_state ? "Tablet mode ON" : "Tablet mode OFF";
+                    const char *sudo_user = getenv("SUDO_USER");
+                    
+                    if (geteuid() == 0) {
+                        // Running as root - find the logged-in user
+                        char target_user[64] = "";
+                        uid_t target_uid = 0;
+                        
+                        if (sudo_user) {
+                            strncpy(target_user, sudo_user, sizeof(target_user) - 1);
+                            struct passwd *pw = getpwnam(sudo_user);
+                            if (pw) target_uid = pw->pw_uid;
+                        } else {
+                            // Try to get user from active session (for systemd service)
+                            FILE *fp = popen("loginctl list-sessions --no-legend 2>/dev/null | grep -v '^$' | head -1 | awk '{print $3}'", "r");
+                            if (fp) {
+                                if (fgets(target_user, sizeof(target_user), fp) && strlen(target_user) > 0) {
+                                    // Remove newline
+                                    size_t len = strlen(target_user);
+                                    if (len > 0 && target_user[len-1] == '\n') target_user[len-1] = '\0';
+                                    struct passwd *pw = getpwnam(target_user);
+                                    if (pw) target_uid = pw->pw_uid;
+                                } else {
+                                    target_user[0] = '\0';
+                                }
+                                pclose(fp);
+                            }
+                        }
+                        
+                        if (target_user[0] != '\0' && target_uid > 0) {
+                            // Construct environment: XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS
+                            // On systemd, D-Bus session is at /run/user/$UID/bus
+                            snprintf(notification_cmd, sizeof(notification_cmd),
+                                     "runuser -u %s -- env XDG_RUNTIME_DIR=/run/user/%d DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%d/bus notify-send -t 2000 'Tablet Mode' '%s'",
+                                     target_user, target_uid, target_uid, message);
+                            system(notification_cmd);
+                        }
+                        // If we can't find user, silently skip notification
+                    } else {
+                        // Running as normal user, execute directly
+                        snprintf(notification_cmd, sizeof(notification_cmd),
+                                 "notify-send -t 2000 'Tablet Mode' '%s'", message);
+                        system(notification_cmd);
+                    }
                 }
             }
         }

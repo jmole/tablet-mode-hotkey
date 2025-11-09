@@ -46,7 +46,18 @@ Then, identify the device (`event7`) and key (`KEY_PROG2`) that you want to use.
 
 ### Building the service
 
-You need GCC, linux-headers, libudev, and libevdev installed to compile this.
+Install dependencies:
+
+```sh
+sudo dnf install gcc libudev-devel
+```
+
+Note: `libnotify` (for notifications) is typically already installed on GNOME systems. If notifications don't work, install it with:
+```sh
+sudo dnf install libnotify
+```
+
+Then build:
 
 ```sh
 make tablet-mode-switch
